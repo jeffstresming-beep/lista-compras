@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#38a169">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mercado">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>🛒 Lista de Compras — Mercado</title>
+<style>
+:root {
+  --bg: #f0f4f8;
+  --surface: #ffffff;
+  --surface2: #f7fafc;
+  --border: #e2e8f0;
+  --text: #1a202c;
+  --text2: #718096;
+  --primary: #38a169;
+  --primary-dk: #276749;
+  --primary-lt: #c6f6d5;
+  --danger: #e53e3e;
+  --danger-lt: #fff5f5;
+  --alim: #dd6b20;
+  --alim-lt: #fffaf0;
+  --alim-bg: #feebc8;
+  --limp: #3182ce;
+  --limp-lt: #ebf8ff;
+  --limp-bg: #bee3f8;
+  --hig: #805ad5;
+  --hig-lt: #faf5ff;
+  --hig-bg: #e9d8fd;
+  --outro: #718096;
+  --outro-lt: #f7fafc;
+  --outro-bg: #e2e8f0;
+  --radius: 14px;
+  --radius-sm: 9px;
+  --shadow: 0 1px 4px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.12);
+  --header-h: 60px;
+  --tab-h: 56px;
+}
+[data-dark] {
+  --bg: #0f172a;
+  --surface: #1e293b;
+  --surface2: #162032;
+  --border: #334155;
+  --text: #f1f5f9;
+  --text2: #94a3b8;
+  --primary-lt: #14532d;
+  --danger-lt: #450a0a;
+  --alim-lt: #451a03;
+  --alim-bg: #7c2d12;
+  --limp-lt: #0c2a4a;
+  --limp-bg: #1e3a5f;
+  --hig-lt: #2d1b69;
+  --hig-bg: #4a1d96;
+  --outro-lt: #1e293b;
+  --outro-bg: #334155;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background .3s,color .3s;overflow-x:hidden}
+
+/* ─── HEADER ─── */
+.hdr{background:var(--primary);color:#fff;height:var(--header-h);display:flex;align-items:center;padding:0 16px;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,0.2)}
+.hdr-title{font-size:1.15rem;font-weight:800;flex:1;display:flex;align-items:center;gap:8px}
+.hdr-sub{font-size:.7rem;opacity:.8;font-weight:500}
+.hdr-btns{display:flex;gap:6px}
+.icon-btn{background:rgba(255,255,255,.2);border:none;color:#fff;width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;transition:background .15s;flex-shrink:0}
+.icon-btn:active{background:rgba(255,255,255,.35)}
+
+/* ─── TABS ─── */
+.tabs{background:var(--surface);border-bottom:2px solid var(--border);height:var(--tab-h);display:flex;position:sticky;top:var(--header-h);z-index:99}
+.tab{flex:1;border:none;background:none;color:var(--text2);cursor:pointer;font-size:.7rem;font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border-bottom:3px solid transparent;margin-bottom:-2px;transition:color .2s,border-color .2s;padding:6px 0;letter-spacing:.03em}
+.tab.on{color:var(--primary);border-bottom-color:var(--primary)}
+.tab-ico{font-size:1.25rem}
+
+/* ─── MAIN ─── */
+.main{max-width:680px;margin:0 auto;padding:14px 12px;padding-bottom:100px}
+.view{display:none}.view.on{display:block}
+
+/* ─── CARD ─── */
+.card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-bottom:14px}
+
+/* ─── PROGRESS ─── */
+.prog-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.prog-label{font-weight:800;font-size:.95rem}
+.prog-date{font-size:.72rem;color:var(--text2);margin-top:2px}
+.prog-count{font-size:1.8rem;font-weight:900;color:var(--primary);line-height:1}
+.prog-pct{font-size:.75rem;color:var(--text2);text-align:right}
+.prog-bar{height:10px;background:var(--border);border-radius:99px;overflow:hidden;margin-bottom:12px}
+.prog-fill{height:100%;background:linear-gradient(90deg,#38a169,#68d391);border-radius:99px;transition:width .5s ease}
+.prog-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{background:var(--surface2);border-radius:var(--radius-sm);padding:10px;text-align:center}
+.stat-v{font-size:.95rem;font-weight:800}
+.stat-l{font-size:.62rem;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+
+/* ─── CATEGORY ─── */
+.cat-sec{margin-bottom:10px}
+.cat-hdr{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:var(--radius-sm);cursor:pointer;font-weight:700;font-size:.82rem;user-select:none;transition:opacity .15s}
+.cat-hdr:active{opacity:.75}
+.cat-alim{background:var(--alim-bg);color:var(--alim)}
+.cat-limp{background:var(--limp-bg);color:var(--limp)}
+.cat-hig{background:var(--hig-bg);color:var(--hig)}
+.cat-outro{background:var(--outro-bg);color:var(--outro)}
+.cat-hdr-name{flex:1}
+.cat-badge{font-size:.7rem;background:rgba(0,0,0,.12);padding:1px 7px;border-radius:99px}
+.cat-arrow{font-size:.7rem;transition:transform .2s}
+.cat-sec.collapsed .cat-arrow{transform:rotate(-90deg)}
+.cat-sec.collapsed .cat-body{display:none}
+
+/* ─── ITEM ─── */
+.item{background:var(--surface);border-radius:var(--radius-sm);box-shadow:var(--shadow);display:flex;align-items:center;gap:10px;padding:10px 12px;margin-bottom:5px;transition:opacity .25s}
+.item.bought{opacity:.5}
+.item.bought .item-name{text-decoration:line-through;color:var(--text2)}
+.chk{width:24px;height:24px;border-radius:50%;border:2px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0;transition:all .2s;background:var(--surface)}
+.chk.on{background:var(--primary);border-color:var(--primary);color:#fff}
+.item-info{flex:1;min-width:0}
+.item-name{font-weight:600;font-size:.92rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item-meta{font-size:.72rem;color:var(--text2);margin-top:2px;display:flex;gap:6px;flex-wrap:wrap}
+.item-price{color:var(--primary);font-weight:700}
+.item-obs{font-style:italic}
+.item-ctrl{display:flex;align-items:center;gap:3px;flex-shrink:0}
+.q-btn{width:26px;height:26px;border-radius:50%;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;font-size:.95rem;display:flex;align-items:center;justify-content:center;transition:all .15s;line-height:1}
+.q-btn:active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.q-val{width:24px;text-align:center;font-weight:800;font-size:.88rem}
+.del-btn{background:none;border:none;color:var(--danger);cursor:pointer;font-size:.9rem;padding:4px 5px;border-radius:6px;opacity:.55;transition:opacity .15s;line-height:1}
+.del-btn:active{opacity:1}
+
+/* ─── FAB ─── */
+.fab{position:fixed;bottom:72px;right:16px;width:54px;height:54px;border-radius:50%;background:var(--primary);color:#fff;border:none;font-size:1.6rem;cursor:pointer;box-shadow:0 4px 16px rgba(56,161,105,.5);display:flex;align-items:center;justify-content:center;z-index:50;transition:transform .2s,background .2s}
+.fab:active{transform:scale(.93);background:var(--primary-dk)}
+
+/* ─── SEARCH ─── */
+.search-wrap{position:relative;margin-bottom:12px}
+.search-ico{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text2);font-size:.95rem}
+.search-inp{width:100%;padding:11px 12px 11px 38px;border-radius:var(--radius);border:1.5px solid var(--border);background:var(--surface);color:var(--text);font-size:.9rem;outline:none;transition:border .2s}
+.search-inp:focus{border-color:var(--primary)}
+
+/* ─── CHIPS ─── */
+.chips{display:flex;gap:7px;overflow-x:auto;padding-bottom:3px;margin-bottom:12px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{padding:5px 14px;border-radius:99px;border:1.5px solid var(--border);background:var(--surface);color:var(--text2);font-size:.75rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .15s;flex-shrink:0}
+.chip.on{background:var(--primary);border-color:var(--primary);color:#fff}
+
+/* ─── PRODUCT ROW ─── */
+.prod-row{background:var(--surface);border-radius:var(--radius-sm);box-shadow:var(--shadow);display:flex;align-items:center;gap:10px;padding:10px 12px;margin-bottom:6px}
+.prod-bar{width:4px;border-radius:2px;align-self:stretch;flex-shrink:0}
+.prod-info{flex:1;min-width:0}
+.prod-name{font-weight:700;font-size:.9rem;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.prod-sub{font-size:.7rem;color:var(--text2);margin-top:2px}
+.prod-obs{font-size:.68rem;color:var(--text2);font-style:italic}
+.prod-acts{display:flex;gap:4px;align-items:center;flex-shrink:0}
+.btn-sm{padding:5px 9px;border-radius:7px;border:none;cursor:pointer;font-size:.75rem;font-weight:700;transition:all .15s;display:flex;align-items:center;gap:3px}
+.btn-add{background:var(--primary-lt);color:var(--primary)}
+.btn-add:active{background:var(--primary);color:#fff}
+.btn-edit{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
+.btn-edit:active{background:var(--border)}
+.btn-del{background:var(--danger-lt);color:var(--danger)}
+.btn-del:active{background:var(--danger);color:#fff}
+.in-list{font-size:.65rem;padding:2px 7px;border-radius:99px;background:var(--primary-lt);color:var(--primary);font-weight:800;white-space:nowrap}
+[data-dark] .in-list{color:#68d391}
+.fav{background:none;border:none;cursor:pointer;font-size:1.15rem;padding:2px;transition:transform .15s;line-height:1}
+.fav:active{transform:scale(1.4)}
+.badge{font-size:.6rem;padding:1px 5px;border-radius:99px;font-weight:700}
+.badge-ess{background:#fef3c7;color:#92400e}
+[data-dark] .badge-ess{background:#451a03;color:#fbbf24}
+
+/* ─── MODAL ─── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;display:none;align-items:flex-end;justify-content:center}
+.overlay.on{display:flex}
+@media(min-width:640px){.overlay{align-items:center}}
+.modal{background:var(--surface);border-radius:var(--radius) var(--radius) 0 0;width:100%;max-width:520px;max-height:92vh;overflow-y:auto;padding:20px 18px 28px;animation:su .28s ease}
+@media(min-width:640px){.modal{border-radius:var(--radius)}}
+@keyframes su{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-title{font-size:1.05rem;font-weight:800;margin-bottom:18px;display:flex;align-items:center;gap:8px}
+.drag-bar{width:40px;height:4px;background:var(--border);border-radius:99px;margin:0 auto 16px}
+.fg{margin-bottom:14px}
+.fl{display:block;font-size:.72rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
+.fi,.fs,.fta{width:100%;padding:9px 11px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-size:.88rem;outline:none;transition:border .2s;font-family:inherit}
+.fi:focus,.fs:focus,.fta:focus{border-color:var(--primary)}
+.fta{min-height:72px;resize:vertical}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.m-acts{display:flex;gap:9px;margin-top:18px}
+.m-btn{flex:1;padding:12px;border-radius:var(--radius-sm);border:none;cursor:pointer;font-weight:800;font-size:.9rem;transition:all .2s}
+.m-btn.pri{background:var(--primary);color:#fff}
+.m-btn.pri:active{background:var(--primary-dk)}
+.m-btn.sec{background:var(--surface2);color:var(--text);border:1.5px solid var(--border)}
+
+/* ─── HISTORY ─── */
+.hist-card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 16px;margin-bottom:8px;cursor:pointer;transition:box-shadow .2s;display:flex;align-items:center;gap:12px}
+.hist-card:active{box-shadow:var(--shadow-lg)}
+.hist-ico{font-size:1.8rem;flex-shrink:0}
+.hist-info{flex:1}
+.hist-title{font-weight:800;font-size:.92rem}
+.hist-date{font-size:.72rem;color:var(--text2);margin-top:1px}
+.hist-meta{display:flex;gap:10px;font-size:.72rem;color:var(--text2);margin-top:4px}
+.hist-total{font-weight:800;font-size:.92rem;color:var(--primary)}
+
+/* ─── SETTINGS ─── */
+.set-sec{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:14px;overflow:hidden}
+.set-hdr{padding:12px 16px;font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--text2);background:var(--surface2);border-bottom:1px solid var(--border)}
+.set-row{padding:13px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s}
+.set-row:last-child{border-bottom:none}
+.set-row:active{background:var(--surface2)}
+.set-row-lbl{font-size:.88rem;font-weight:600}
+.set-row-sub{font-size:.7rem;color:var(--text2);margin-top:2px}
+.set-ico{color:var(--text2);font-size:.85rem}
+.toggle{width:44px;height:24px;border-radius:12px;background:var(--border);position:relative;transition:background .2s;flex-shrink:0}
+.toggle.on{background:var(--primary)}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.toggle.on::after{transform:translateX(20px)}
+
+/* ─── EMPTY ─── */
+.empty{text-align:center;padding:52px 20px;color:var(--text2)}
+.empty-ico{font-size:2.8rem;margin-bottom:10px}
+.empty-title{font-weight:700;font-size:.95rem;color:var(--text);margin-bottom:5px}
+.empty-sub{font-size:.8rem}
+
+/* ─── TOAST ─── */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(12px);background:#1a202c;color:#fff;padding:9px 20px;border-radius:99px;font-size:.82rem;font-weight:700;opacity:0;transition:all .3s;z-index:300;white-space:nowrap;pointer-events:none}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+[data-dark] .toast{background:#e2e8f0;color:#1a202c}
+
+/* ─── SECTION LABEL ─── */
+.sec-lbl{font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--text2);margin:16px 0 7px}
+
+/* ─── DONE SECTION ─── */
+.done-sec{opacity:.65}
+
+/* ─── SCAN FAB ─── */
+.fin-btn{position:fixed;bottom:72px;right:76px;width:54px;height:54px;border-radius:50%;background:#2b6cb0;color:#fff;border:none;font-size:1.2rem;cursor:pointer;box-shadow:0 4px 16px rgba(43,108,176,.5);display:flex;align-items:center;justify-content:center;z-index:50;transition:transform .2s,background .2s}
+.fin-btn:active{transform:scale(.93);background:#2c5282}
+
+/* ─── DETAIL TABLE ─── */
+.det-row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);font-size:.88rem}
+.det-row:last-child{border-bottom:none}
+.det-row strong{color:var(--primary)}
+
+/* ─── INFO BOX ─── */
+.info-box{background:var(--alim-lt);border:1px solid var(--alim-bg);border-radius:var(--radius-sm);padding:10px 12px;font-size:.78rem;color:var(--alim);margin-bottom:14px;display:flex;gap:8px}
+
+hr{border:none;border-top:1px solid var(--border);margin:14px 0}
+</style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<header class="hdr">
+  <div class="hdr-title">
+    🛒
+    <div>
+      <div>Mercado</div>
+      <div class="hdr-sub" id="hdrDate"></div>
+    </div>
+  </div>
+  <div class="hdr-btns">
+    <button class="icon-btn" onclick="toggleDark()" title="Modo escuro" id="darkBtn">🌙</button>
+    <button class="fin-btn" onclick="finalizarCompra()" title="Finalizar compra" style="position:static;width:36px;height:36px;font-size:1rem;border-radius:50%;box-shadow:none">✅</button>
+  </div>
+</header>
+
+<!-- ═══ TABS ═══ -->
+<nav class="tabs">
+  <button class="tab on" id="t-lista" onclick="goTab('lista')"><span class="tab-ico">🛒</span>Lista</button>
+  <button class="tab" id="t-catalogo" onclick="goTab('catalogo')"><span class="tab-ico">📦</span>Catálogo</button>
+  <button class="tab" id="t-historico" onclick="goTab('historico')"><span class="tab-ico">📊</span>Histórico</button>
+  <button class="tab" id="t-config" onclick="goTab('config')"><span class="tab-ico">⚙️</span>Mais</button>
+</nav>
+
+<main class="main">
+
+  <!-- ══ LISTA ══ -->
+  <div class="view on" id="v-lista">
+    <!-- Progress -->
+    <div class="card" id="progCard">
+      <div class="prog-top">
+        <div>
+          <div class="prog-label">🛒 Compra atual</div>
+          <div class="prog-date" id="progDate"></div>
+        </div>
+        <div style="text-align:right">
+          <div class="prog-count" id="progCount">0/0</div>
+          <div class="prog-pct" id="progPct">0%</div>
+        </div>
+      </div>
+      <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+      <div class="prog-stats">
+        <div class="stat"><div class="stat-v" id="sPend">0</div><div class="stat-l">Pendentes</div></div>
+        <div class="stat"><div class="stat-v" id="sDone">0</div><div class="stat-l">Comprados</div></div>
+        <div class="stat"><div class="stat-v" id="sTotal">R$0</div><div class="stat-l">Total Est.</div></div>
+      </div>
+    </div>
+    <div id="listaHTML"></div>
+  </div>
+
+  <!-- ══ CATÁLOGO ══ -->
+  <div class="view" id="v-catalogo">
+    <div class="search-wrap">
+      <span class="search-ico">🔍</span>
+      <input class="search-inp" type="search" placeholder="Buscar produto..." id="catSearch" oninput="renderCatalogo()">
+    </div>
+    <div class="chips" id="catChips">
+      <button class="chip on" data-f="todos" onclick="setFiltro('todos')">Todos</button>
+      <button class="chip" data-f="Alimentação" onclick="setFiltro('Alimentação')">🍎 Alimentação</button>
+      <button class="chip" data-f="Limpeza" onclick="setFiltro('Limpeza')">🧹 Limpeza</button>
+      <button class="chip" data-f="Higiene" onclick="setFiltro('Higiene')">🧴 Higiene</button>
+      <button class="chip" data-f="Outros" onclick="setFiltro('Outros')">📦 Outros</button>
+      <button class="chip" data-f="fav" onclick="setFiltro('fav')">⭐ Favoritos</button>
+    </div>
+    <div id="catalogoHTML"></div>
+  </div>
+
+  <!-- ══ HISTÓRICO ══ -->
+  <div class="view" id="v-historico">
+    <div id="histHTML"></div>
+  </div>
+
+  <!-- ══ CONFIG ══ -->
+  <div class="view" id="v-config">
+    <div class="set-sec">
+      <div class="set-hdr">Aparência</div>
+      <div class="set-row" onclick="toggleDark()">
+        <div><div class="set-row-lbl">🌙 Modo Escuro</div><div class="set-row-sub">Tema escuro para uso noturno</div></div>
+        <div class="toggle" id="darkToggle"></div>
+      </div>
+    </div>
+    <div class="set-sec">
+      <div class="set-hdr">Lista de Compras</div>
+      <div class="set-row" onclick="limparComprados()">
+        <div><div class="set-row-lbl">✅ Remover Itens Comprados</div><div class="set-row-sub">Remove itens já marcados</div></div>
+        <span class="set-ico">›</span>
+      </div>
+      <div class="set-row" onclick="limparLista()">
+        <div><div class="set-row-lbl">🗑️ Limpar Lista Completa</div><div class="set-row-sub">Esvazia a lista atual</div></div>
+        <span class="set-ico">›</span>
+      </div>
+      <div class="set-row" onclick="restaurarLista()">
+        <div><div class="set-row-lbl">🔄 Restaurar Lista Padrão</div><div class="set-row-sub">Carrega itens "sem estoque" da planilha original</div></div>
+        <span class="set-ico">›</span>
+      </div>
+    </div>
+    <div class="set-sec">
+      <div class="set-hdr">Dados</div>
+      <div class="set-row" onclick="exportar()">
+        <div><div class="set-row-lbl">📤 Exportar Backup</div><div class="set-row-sub">Salva todos os dados em JSON</div></div>
+        <span class="set-ico">›</span>
+      </div>
+      <div class="set-row" onclick="document.getElementById('impFile').click()">
+        <div><div class="set-row-lbl">📥 Importar Backup</div><div class="set-row-sub">Restaura dados de arquivo JSON</div></div>
+        <span class="set-ico">›</span>
+      </div>
+      <div class="set-row" onclick="resetTudo()">
+        <div><div class="set-row-lbl">⚠️ Restaurar Dados Originais</div><div class="set-row-sub">Apaga tudo e volta ao estado inicial da planilha</div></div>
+        <span class="set-ico">›</span>
+      </div>
+    </div>
+    <div class="set-sec">
+      <div class="set-hdr">Sobre</div>
+      <div class="set-row" style="cursor:default">
+        <div><div class="set-row-lbl">🛒 Lista de Compras v1.0</div><div class="set-row-sub">Baseado na planilha "Lista de compras — Mercado" · 53 produtos importados</div></div>
+      </div>
+    </div>
+    <input type="file" id="impFile" accept=".json" style="display:none" onchange="importar(event)">
+  </div>
+
+</main>
+
+<!-- FAB -->
+<button class="fab" id="fab" onclick="fabAcao()">+</button>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- ═══ MODAIS ═══ -->
+
+<!-- Modal: Produto (add/edit) -->
+<div class="overlay" id="mProd">
+  <div class="modal">
+    <div class="drag-bar"></div>
+    <div class="modal-title" id="mProdTitle">➕ Novo Produto</div>
+    <div class="fg"><label class="fl">Nome *</label><input class="fi" id="pN" placeholder="Ex: Arroz, Detergente..."></div>
+    <div class="f2">
+      <div class="fg"><label class="fl">Categoria</label>
+        <select class="fs" id="pCat">
+          <option value="Alimentação">🍎 Alimentação</option>
+          <option value="Limpeza">🧹 Limpeza</option>
+          <option value="Higiene">🧴 Higiene</option>
+          <option value="Outros">📦 Outros</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">Qtd Padrão</label><input class="fi" id="pQ" type="number" min="1" value="1"></div>
+    </div>
+    <div class="f2">
+      <div class="fg"><label class="fl">Preço Unit. (R$)</label><input class="fi" id="pP" type="number" step="0.01" min="0" placeholder="0,00"></div>
+      <div class="fg"><label class="fl">Essencial?</label>
+        <select class="fs" id="pE">
+          <option value="1">✅ Sim</option>
+          <option value="0">❌ Não</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg"><label class="fl">Observações</label><textarea class="fta" id="pO" placeholder="Marca, tamanho, cor..."></textarea></div>
+    <div class="m-acts">
+      <button class="m-btn sec" onclick="fecharModal('mProd')">Cancelar</button>
+      <button class="m-btn pri" onclick="salvarProd()">💾 Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Selecionar produto para lista -->
+<div class="overlay" id="mSel">
+  <div class="modal">
+    <div class="drag-bar"></div>
+    <div class="modal-title">📦 Adicionar à Lista</div>
+    <div class="search-wrap" style="margin-bottom:10px">
+      <span class="search-ico">🔍</span>
+      <input class="search-inp" type="search" placeholder="Buscar produto..." id="selQ" oninput="renderSel()">
+    </div>
+    <div id="selHTML" style="max-height:55vh;overflow-y:auto"></div>
+    <div class="m-acts"><button class="m-btn sec" onclick="fecharModal('mSel')">Fechar</button></div>
+  </div>
+</div>
+
+<!-- Modal: Detalhe histórico -->
+<div class="overlay" id="mHist">
+  <div class="modal">
+    <div class="drag-bar"></div>
+    <div class="modal-title" id="mHistTitle">📊 Compra</div>
+    <div id="mHistHTML"></div>
+    <div class="m-acts"><button class="m-btn sec" onclick="fecharModal('mHist')">Fechar</button></div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════
+// DADOS INICIAIS (Importados da planilha)
+// Correções aplicadas vs planilha original:
+// • "Iourgut" → removido (duplicata de "Iogurte")
+// • "Sacola" → categoria Outros
+// • "oleo" → "Óleo" (capitalização)
+// • "Poipoca" → "Pipoca" (correção ortográfica)
+// • Condicionador, Fio dental → Higiene
+// • Veja, Bombril, Pano de prato → Limpeza
+// ════════════════════════════════════════
+const PROD_INI = [
+  {id:'p01',name:'Arroz',cat:'Alimentação',qty:1,price:16.49,ess:true,stock:true,fav:false,obs:''},
+  {id:'p02',name:'Açúcar',cat:'Alimentação',qty:1,price:4.50,ess:true,stock:true,fav:false,obs:''},
+  {id:'p03',name:'Sal',cat:'Alimentação',qty:1,price:3.29,ess:true,stock:true,fav:false,obs:''},
+  {id:'p04',name:'Feijão',cat:'Alimentação',qty:1,price:8.49,ess:true,stock:true,fav:false,obs:''},
+  {id:'p05',name:'Aveia',cat:'Alimentação',qty:1,price:13.90,ess:true,stock:true,fav:false,obs:''},
+  {id:'p06',name:'Azeite',cat:'Alimentação',qty:1,price:7.15,ess:true,stock:true,fav:false,obs:''},
+  {id:'p07',name:'Manteiga',cat:'Alimentação',qty:1,price:15.75,ess:true,stock:false,fav:false,obs:''},
+  {id:'p08',name:'Macarrão',cat:'Alimentação',qty:10,price:3.90,ess:true,stock:false,fav:false,obs:''},
+  {id:'p09',name:'Granola',cat:'Alimentação',qty:1,price:26.50,ess:true,stock:true,fav:false,obs:''},
+  {id:'p10',name:'Leite',cat:'Alimentação',qty:12,price:5.39,ess:true,stock:false,fav:false,obs:''},
+  {id:'p11',name:'Iogurte',cat:'Alimentação',qty:3,price:4.25,ess:true,stock:false,fav:false,obs:''},
+  {id:'p12',name:'Pão de forma',cat:'Alimentação',qty:1,price:7.95,ess:true,stock:false,fav:false,obs:''},
+  {id:'p13',name:'Tapioca',cat:'Alimentação',qty:2,price:8.90,ess:true,stock:true,fav:false,obs:''},
+  {id:'p14',name:'Temperos',cat:'Alimentação',qty:2,price:12.50,ess:true,stock:false,fav:false,obs:''},
+  {id:'p15',name:'Molho de tomate',cat:'Alimentação',qty:10,price:1.59,ess:true,stock:false,fav:false,obs:''},
+  {id:'p16',name:'Óleo',cat:'Alimentação',qty:1,price:6.49,ess:true,stock:false,fav:false,obs:''},
+  {id:'p17',name:'Batata congelada',cat:'Alimentação',qty:1,price:30.89,ess:false,stock:false,fav:false,obs:''},
+  {id:'p18',name:'Suco',cat:'Alimentação',qty:2,price:18.59,ess:false,stock:false,fav:false,obs:''},
+  {id:'p19',name:'Café',cat:'Alimentação',qty:2,price:23.49,ess:true,stock:false,fav:false,obs:''},
+  {id:'p20',name:'Ovos',cat:'Alimentação',qty:1,price:39.90,ess:true,stock:false,fav:false,obs:''},
+  {id:'p21',name:'Queijo',cat:'Alimentação',qty:1,price:56.90,ess:true,stock:false,fav:false,obs:''},
+  {id:'p22',name:'Pipoca',cat:'Alimentação',qty:4,price:5.95,ess:false,stock:false,fav:false,obs:''},
+  {id:'p23',name:'Barra Bold',cat:'Alimentação',qty:2,price:15.39,ess:false,stock:false,fav:false,obs:''},
+  {id:'p24',name:'Monster',cat:'Alimentação',qty:6,price:9.79,ess:false,stock:false,fav:false,obs:''},
+  {id:'p25',name:'Sacola',cat:'Outros',qty:1,price:6.49,ess:false,stock:false,fav:false,obs:''},
+  {id:'p26',name:'Papel Higiênico',cat:'Higiene',qty:1,price:22.69,ess:true,stock:false,fav:false,obs:''},
+  {id:'p27',name:'Lenço Umedecido',cat:'Higiene',qty:2,price:47.49,ess:true,stock:false,fav:false,obs:''},
+  {id:'p28',name:'Enxaguante bucal',cat:'Higiene',qty:1,price:24.79,ess:true,stock:false,fav:false,obs:''},
+  {id:'p29',name:'Desodorante',cat:'Higiene',qty:2,price:16.99,ess:true,stock:false,fav:false,obs:''},
+  {id:'p30',name:'Pasta de dente',cat:'Higiene',qty:1,price:8.15,ess:true,stock:false,fav:false,obs:''},
+  {id:'p31',name:'Sabonete líquido',cat:'Higiene',qty:2,price:7.45,ess:true,stock:true,fav:false,obs:''},
+  {id:'p32',name:'Creme corporal',cat:'Higiene',qty:1,price:12.90,ess:true,stock:true,fav:false,obs:''},
+  {id:'p33',name:'Fio dental',cat:'Higiene',qty:1,price:7.00,ess:true,stock:true,fav:false,obs:''},
+  {id:'p34',name:'Bucha de Banho',cat:'Higiene',qty:1,price:5.99,ess:true,stock:true,fav:false,obs:''},
+  {id:'p35',name:'Creme de cabelo',cat:'Higiene',qty:1,price:33.89,ess:true,stock:false,fav:false,obs:''},
+  {id:'p36',name:'Shampoo',cat:'Higiene',qty:1,price:23.50,ess:true,stock:true,fav:false,obs:''},
+  {id:'p37',name:'Condicionador',cat:'Higiene',qty:1,price:24.70,ess:true,stock:true,fav:false,obs:''},
+  {id:'p38',name:'Detergente',cat:'Limpeza',qty:1,price:22.90,ess:true,stock:false,fav:false,obs:''},
+  {id:'p39',name:'Sabão em Pó 1,6kg',cat:'Limpeza',qty:1,price:17.99,ess:true,stock:false,fav:false,obs:''},
+  {id:'p40',name:'Amaciante Downy',cat:'Limpeza',qty:1,price:53.98,ess:true,stock:false,fav:false,obs:''},
+  {id:'p41',name:'Tira Manchas',cat:'Limpeza',qty:1,price:29.89,ess:true,stock:false,fav:false,obs:''},
+  {id:'p42',name:'Veja',cat:'Limpeza',qty:1,price:10.95,ess:true,stock:false,fav:false,obs:''},
+  {id:'p43',name:'Candida',cat:'Limpeza',qty:1,price:12.00,ess:true,stock:true,fav:false,obs:''},
+  {id:'p44',name:'Bucha de Louça',cat:'Limpeza',qty:1,price:16.49,ess:true,stock:true,fav:false,obs:''},
+  {id:'p45',name:'Bucha',cat:'Limpeza',qty:1,price:7.49,ess:true,stock:false,fav:false,obs:''},
+  {id:'p46',name:'Bombril',cat:'Limpeza',qty:1,price:2.69,ess:true,stock:false,fav:false,obs:''},
+  {id:'p47',name:'Pano de prato',cat:'Limpeza',qty:1,price:8.90,ess:true,stock:true,fav:false,obs:''},
+  {id:'p48',name:'Papel alumínio',cat:'Limpeza',qty:1,price:5.39,ess:true,stock:true,fav:false,obs:''},
+  {id:'p49',name:'Saco de Lixo',cat:'Limpeza',qty:1,price:7.99,ess:true,stock:true,fav:false,obs:''},
+  {id:'p50',name:'CIF',cat:'Limpeza',qty:1,price:17.00,ess:true,stock:true,fav:false,obs:''},
+  {id:'p51',name:'Pato (privada)',cat:'Limpeza',qty:1,price:17.45,ess:true,stock:false,fav:false,obs:''},
+  {id:'p52',name:'Freeco',cat:'Limpeza',qty:1,price:13.59,ess:true,stock:true,fav:false,obs:''},
+];
+
+// Lista inicial = produtos sem estoque
+const LISTA_INI = PROD_INI.filter(p=>!p.stock).map(p=>mkItem(p));
+
+// ════════════════════════════════════════
+// ESTADO
+// ════════════════════════════════════════
+let S = { prods:[], lista:[], hist:[], dark:false };
+let editId = null;
+let catFiltro = 'todos';
+
+function mkItem(p) {
+  return {id:'i'+uid(),pid:p.id,nome:p.name,cat:p.cat,qty:p.qty,price:p.price,comprado:false,obs:p.obs||''};
+}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function R$(v){return 'R$ '+(v||0).toFixed(2).replace('.',',')}
+
+// ════════════════════════════════════════
+// PERSISTÊNCIA
+// ════════════════════════════════════════
+function salvar(){localStorage.setItem('mkt_v3',JSON.stringify(S))}
+function carregar(){
+  try{
+    const s=localStorage.getItem('mkt_v3');
+    if(s){S=JSON.parse(s)}
+    else{S.prods=JSON.parse(JSON.stringify(PROD_INI));S.lista=JSON.parse(JSON.stringify(LISTA_INI))}
+  }catch{S.prods=JSON.parse(JSON.stringify(PROD_INI));S.lista=JSON.parse(JSON.stringify(LISTA_INI))}
+  aplicarTema();
+}
+
+// ════════════════════════════════════════
+// TEMA
+// ════════════════════════════════════════
+function toggleDark(){S.dark=!S.dark;aplicarTema();salvar()}
+function aplicarTema(){
+  document.documentElement.toggleAttribute('data-dark',!!S.dark);
+  const t=document.getElementById('darkToggle');
+  if(t)t.className='toggle'+(S.dark?' on':'');
+  const b=document.getElementById('darkBtn');
+  if(b)b.textContent=S.dark?'☀️':'🌙';
+}
+
+// ════════════════════════════════════════
+// NAVEGAÇÃO
+// ════════════════════════════════════════
+let tabAtual='lista';
+function goTab(t){
+  document.querySelectorAll('.tab').forEach(el=>el.classList.toggle('on',el.id==='t-'+t));
+  document.querySelectorAll('.view').forEach(el=>el.classList.toggle('on',el.id==='v-'+t));
+  tabAtual=t;
+  const fab=document.getElementById('fab');
+  fab.style.display=(t==='lista'||t==='catalogo')?'flex':'none';
+  if(t==='lista')renderLista();
+  if(t==='catalogo')renderCatalogo();
+  if(t==='historico')renderHist();
+  if(t==='config')aplicarTema();
+}
+function fabAcao(){
+  if(tabAtual==='lista'){abrirSel()}
+  else if(tabAtual==='catalogo'){abrirProd(null)}
+}
+
+// ════════════════════════════════════════
+// UTILS VISUAIS
+// ════════════════════════════════════════
+const CAT_CLS={Alimentação:'cat-alim',Limpeza:'cat-limp',Higiene:'cat-hig',Outros:'cat-outro'};
+const CAT_ICO={Alimentação:'🍎',Limpeza:'🧹',Higiene:'🧴',Outros:'📦'};
+const CAT_BAR={Alimentação:'#dd6b20',Limpeza:'#3182ce',Higiene:'#805ad5',Outros:'#718096'};
+function catCls(c){return CAT_CLS[c]||'cat-outro'}
+function catIco(c){return (CAT_ICO[c]||'📦')+' '+c}
+function catBar(c){return CAT_BAR[c]||'#718096'}
+
+let _toastTmr;
+function toast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.classList.add('on');
+  clearTimeout(_toastTmr);
+  _toastTmr=setTimeout(()=>el.classList.remove('on'),2600);
+}
+
+// ════════════════════════════════════════
+// LISTA DE COMPRAS
+// ════════════════════════════════════════
+function renderLista(){
+  const total=S.lista.length;
+  const feitos=S.lista.filter(i=>i.comprado).length;
+  const pend=total-feitos;
+  const pct=total?Math.round(feitos/total*100):0;
+  const totalVal=S.lista.filter(i=>!i.comprado).reduce((s,i)=>s+i.price*i.qty,0);
+
+  document.getElementById('progCount').textContent=feitos+'/'+total;
+  document.getElementById('progPct').textContent=pct+'%';
+  document.getElementById('progFill').style.width=pct+'%';
+  document.getElementById('sPend').textContent=pend;
+  document.getElementById('sDone').textContent=feitos;
+  document.getElementById('sTotal').textContent=R$(totalVal);
+
+  if(!total){
+    document.getElementById('listaHTML').innerHTML=`<div class="empty"><div class="empty-ico">🛒</div><div class="empty-title">Lista vazia</div><div class="empty-sub">Toque em + para adicionar produtos</div></div>`;
+    return;
+  }
+
+  const pendItens=S.lista.filter(i=>!i.comprado);
+  const feitosItens=S.lista.filter(i=>i.comprado);
+  const ORDER=['Alimentação','Limpeza','Higiene','Outros'];
+  const catsUsadas=[...new Set(pendItens.map(i=>i.cat))].sort((a,b)=>{
+    const ai=ORDER.indexOf(a),bi=ORDER.indexOf(b);
+    return (ai<0?99:ai)-(bi<0?99:bi);
+  });
+
+  let html='';
+  catsUsadas.forEach(cat=>{
+    const itens=pendItens.filter(i=>i.cat===cat);
+    if(!itens.length)return;
+    const vCat=itens.reduce((s,i)=>s+i.price*i.qty,0);
+    const cid='cs_'+cat.replace(/\s/g,'_');
+    html+=`<div class="cat-sec" id="${cid}">
+      <div class="cat-hdr ${catCls(cat)}" onclick="toggleCat('${cid}')">
+        <span class="cat-hdr-name">${catIco(cat)}</span>
+        <span class="cat-badge">${itens.length} item${itens.length>1?'s':''} · ${R$(vCat)}</span>
+        <span class="cat-arrow">▾</span>
+      </div>
+      <div class="cat-body">${itens.map(i=>tmplItem(i)).join('')}</div>
+    </div>`;
+  });
+
+  if(feitosItens.length){
+    html+=`<div class="done-sec"><div class="sec-lbl">✅ Comprados (${feitosItens.length})</div>${feitosItens.map(i=>tmplItem(i)).join('')}</div>`;
+  }
+
+  document.getElementById('listaHTML').innerHTML=html;
+}
+
+function tmplItem(i){
+  return `<div class="item${i.comprado?' bought':''}" id="it_${i.id}">
+    <div class="chk${i.comprado?' on':''}" onclick="togComprado('${i.id}')">${i.comprado?'✓':''}</div>
+    <div class="item-info">
+      <div class="item-name">${i.nome}</div>
+      <div class="item-meta">
+        <span class="item-price">${R$(i.price*i.qty)}</span>
+        <span>${i.qty}x ${R$(i.price)}</span>
+        ${i.obs?`<span class="item-obs">· ${i.obs}</span>`:''}
+      </div>
+    </div>
+    <div class="item-ctrl">
+      <button class="q-btn" onclick="mudaQty('${i.id}',-1)">−</button>
+      <span class="q-val">${i.qty}</span>
+      <button class="q-btn" onclick="mudaQty('${i.id}',1)">+</button>
+      <button class="del-btn" onclick="remItem('${i.id}')">✕</button>
+    </div>
+  </div>`;
+}
+
+function togComprado(id){
+  const i=S.lista.find(x=>x.id===id);
+  if(i){i.comprado=!i.comprado;salvar();renderLista()}
+}
+function mudaQty(id,d){
+  const i=S.lista.find(x=>x.id===id);
+  if(i){i.qty=Math.max(1,i.qty+d);salvar();renderLista()}
+}
+function remItem(id){
+  S.lista=S.lista.filter(x=>x.id!==id);
+  salvar();renderLista();toast('Item removido da lista');
+}
+function toggleCat(cid){document.getElementById(cid)?.classList.toggle('collapsed')}
+
+function limparComprados(){
+  if(!confirm('Remover todos os itens comprados?'))return;
+  S.lista=S.lista.filter(i=>!i.comprado);
+  salvar();renderLista();toast('Itens comprados removidos');
+}
+function limparLista(){
+  if(!confirm('Esvaziar a lista completa?'))return;
+  S.lista=[];salvar();renderLista();toast('Lista esvaziada');
+}
+function restaurarLista(){
+  if(!confirm('Adicionar itens "sem estoque" à lista?'))return;
+  const jaLa=new Set(S.lista.map(i=>i.pid));
+  S.prods.filter(p=>!p.stock).forEach(p=>{
+    if(!jaLa.has(p.id))S.lista.push(mkItem(p));
+  });
+  salvar();renderLista();toast('Lista restaurada!');
+}
+
+// ════════════════════════════════════════
+// FINALIZAR COMPRA → HISTÓRICO
+// ════════════════════════════════════════
+function finalizarCompra(){
+  const comprados=S.lista.filter(i=>i.comprado);
+  if(!comprados.length){toast('Nenhum item marcado como comprado!');return}
+  if(!confirm(`Finalizar compra? ${comprados.length} item${comprados.length>1?'s':''} serão registrados no histórico.`))return;
+  const total=comprados.reduce((s,i)=>s+i.price*i.qty,0);
+  S.hist.unshift({id:uid(),dt:new Date().toISOString(),itens:JSON.parse(JSON.stringify(comprados)),total,count:comprados.length});
+  S.lista=S.lista.filter(i=>!i.comprado);
+  salvar();renderLista();
+  toast(`✅ Compra finalizada! ${comprados.length} itens · ${R$(total)}`);
+}
+
+// ════════════════════════════════════════
+// MODAL: SELECIONAR PRODUTO PARA LISTA
+// ════════════════════════════════════════
+function abrirSel(){
+  document.getElementById('selQ').value='';
+  renderSel();
+  abrirModal('mSel');
+}
+function renderSel(){
+  const q=document.getElementById('selQ').value.toLowerCase();
+  const naLista=new Set(S.lista.map(i=>i.pid));
+  let prods=[...S.prods].filter(p=>!q||p.name.toLowerCase().includes(q)).sort((a,b)=>a.name.localeCompare(b.name,'pt-BR'));
+  if(!prods.length){
+    document.getElementById('selHTML').innerHTML=`<div class="empty" style="padding:30px 10px"><div class="empty-ico">🔍</div><div>Nenhum produto encontrado</div></div>`;
+    return;
+  }
+  document.getElementById('selHTML').innerHTML=prods.map(p=>`
+    <div class="prod-row">
+      <div class="prod-bar" style="background:${catBar(p.cat)}"></div>
+      <div class="prod-info">
+        <div class="prod-name">${p.name}</div>
+        <div class="prod-sub">${catIco(p.cat)} · ${R$(p.price)} · Qtd padrão: ${p.qty}</div>
+      </div>
+      ${naLista.has(p.id)
+        ?`<span class="in-list">✓ Na lista</span>`
+        :`<button class="btn-sm btn-add" onclick="addDaSel('${p.id}')">+ Lista</button>`
+      }
+    </div>`).join('');
+}
+function addDaSel(pid){
+  const p=S.prods.find(x=>x.id===pid);if(!p)return;
+  if(S.lista.find(i=>i.pid===pid)){toast('Já está na lista!');return}
+  S.lista.push(mkItem(p));
+  salvar();renderSel();renderLista();
+  toast(`${p.name} adicionado! ✓`);
+}
+
+// ════════════════════════════════════════
+// CATÁLOGO
+// ════════════════════════════════════════
+function setFiltro(f){
+  catFiltro=f;
+  document.querySelectorAll('#catChips .chip').forEach(c=>c.classList.toggle('on',c.dataset.f===f));
+  renderCatalogo();
+}
+function renderCatalogo(){
+  const q=document.getElementById('catSearch').value.toLowerCase();
+  const naLista=new Set(S.lista.map(i=>i.pid));
+  let prods=S.prods.filter(p=>{
+    const mQ=!q||p.name.toLowerCase().includes(q)||p.obs.toLowerCase().includes(q);
+    const mF=catFiltro==='todos'||(catFiltro==='fav'?p.fav:p.cat===catFiltro);
+    return mQ&&mF;
+  }).sort((a,b)=>{
+    if(a.fav&&!b.fav)return -1;if(!a.fav&&b.fav)return 1;
+    return a.name.localeCompare(b.name,'pt-BR');
+  });
+  if(!prods.length){
+    document.getElementById('catalogoHTML').innerHTML=`<div class="empty"><div class="empty-ico">🔍</div><div class="empty-title">Nenhum produto</div></div>`;
+    return;
+  }
+  document.getElementById('catalogoHTML').innerHTML=prods.map(p=>`
+    <div class="prod-row">
+      <div class="prod-bar" style="background:${catBar(p.cat)}"></div>
+      <div class="prod-info">
+        <div class="prod-name">
+          ${p.fav?'⭐ ':''}${p.name}
+          ${p.ess?`<span class="badge badge-ess">Essencial</span>`:''}
+        </div>
+        <div class="prod-sub">${catIco(p.cat)} · ${R$(p.price)} · Qtd padrão: ${p.qty}${p.stock?' · ✅ Em estoque':''}</div>
+        ${p.obs?`<div class="prod-obs">💬 ${p.obs}</div>`:''}
+      </div>
+      <div class="prod-acts">
+        <button class="fav" onclick="togFav('${p.id}')" title="Favoritar">${p.fav?'⭐':'☆'}</button>
+        ${naLista.has(p.id)
+          ?`<span class="in-list">✓</span>`
+          :`<button class="btn-sm btn-add" onclick="addDoCat('${p.id}')">+</button>`
+        }
+        <button class="btn-sm btn-edit" onclick="abrirProd('${p.id}')">✏️</button>
+        <button class="btn-sm btn-del" onclick="delProd('${p.id}')">🗑️</button>
+      </div>
+    </div>`).join('');
+}
+function togFav(id){
+  const p=S.prods.find(x=>x.id===id);if(p){p.fav=!p.fav;salvar();renderCatalogo()}
+}
+function addDoCat(pid){
+  const p=S.prods.find(x=>x.id===pid);if(!p)return;
+  if(S.lista.find(i=>i.pid===pid)){toast('Já está na lista!');return}
+  S.lista.push(mkItem(p));salvar();renderCatalogo();
+  toast(`${p.name} adicionado à lista!`);
+}
+function delProd(id){
+  const p=S.prods.find(x=>x.id===id);
+  if(!confirm(`Excluir "${p?.name}"?`))return;
+  S.prods=S.prods.filter(x=>x.id!==id);
+  S.lista=S.lista.filter(i=>i.pid!==id);
+  salvar();renderCatalogo();toast('Produto excluído');
+}
+
+// ════════════════════════════════════════
+// MODAL: PRODUTO (ADD/EDIT)
+// ════════════════════════════════════════
+function abrirProd(id){
+  editId=id;
+  document.getElementById('mProdTitle').textContent=id?'✏️ Editar Produto':'➕ Novo Produto';
+  if(id){
+    const p=S.prods.find(x=>x.id===id);
+    document.getElementById('pN').value=p.name;
+    document.getElementById('pCat').value=p.cat;
+    document.getElementById('pQ').value=p.qty;
+    document.getElementById('pP').value=p.price;
+    document.getElementById('pE').value=p.ess?'1':'0';
+    document.getElementById('pO').value=p.obs||'';
+  }else{
+    document.getElementById('pN').value='';
+    document.getElementById('pCat').value='Alimentação';
+    document.getElementById('pQ').value=1;
+    document.getElementById('pP').value='';
+    document.getElementById('pE').value='1';
+    document.getElementById('pO').value='';
+  }
+  abrirModal('mProd');
+  setTimeout(()=>document.getElementById('pN').focus(),300);
+}
+function salvarProd(){
+  const nome=document.getElementById('pN').value.trim();
+  if(!nome){toast('Nome é obrigatório!');document.getElementById('pN').focus();return}
+  const d={
+    name:nome,cat:document.getElementById('pCat').value,
+    qty:parseInt(document.getElementById('pQ').value)||1,
+    price:parseFloat(document.getElementById('pP').value)||0,
+    ess:document.getElementById('pE').value==='1',
+    obs:document.getElementById('pO').value.trim()
+  };
+  if(editId){
+    const p=S.prods.find(x=>x.id===editId);
+    if(p){Object.assign(p,d);
+      // Atualiza item na lista se existir
+      const li=S.lista.find(i=>i.pid===editId);
+      if(li){li.nome=d.name;li.cat=d.cat;li.price=d.price;li.obs=d.obs}
+    }
+    toast('Produto atualizado!');
+  }else{
+    S.prods.push({id:'p'+uid(),...d,stock:false,fav:false});
+    toast('Produto criado!');
+  }
+  salvar();fecharModal('mProd');renderCatalogo();renderLista();
+}
+
+// ════════════════════════════════════════
+// HISTÓRICO
+// ════════════════════════════════════════
+function renderHist(){
+  if(!S.hist.length){
+    document.getElementById('histHTML').innerHTML=`<div class="empty"><div class="empty-ico">📊</div><div class="empty-title">Sem histórico ainda</div><div class="empty-sub">Finalize uma compra para registrar aqui</div></div>`;
+    return;
+  }
+  const totalGeral=S.hist.reduce((s,h)=>s+h.total,0);
+  let html=`<div class="card" style="display:flex;justify-content:space-between;align-items:center">
+    <div><div style="font-weight:800;font-size:.9rem">Total investido</div><div style="font-size:.72rem;color:var(--text2)">${S.hist.length} compra${S.hist.length>1?'s':''} registrada${S.hist.length>1?'s':''}</div></div>
+    <div style="font-size:1.5rem;font-weight:900;color:var(--primary)">${R$(totalGeral)}</div>
+  </div>`;
+  html+=S.hist.map((h,idx)=>{
+    const d=new Date(h.dt);
+    return `<div class="hist-card" onclick="verHist(${idx})">
+      <div class="hist-ico">🛒</div>
+      <div class="hist-info">
+        <div class="hist-title">Compra #${S.hist.length-idx}</div>
+        <div class="hist-date">${d.toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div>
+        <div class="hist-meta"><span>📦 ${h.count} item${h.count>1?'s':''}</span><span>🕐 ${d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</span></div>
+      </div>
+      <div class="hist-total">${R$(h.total)}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('histHTML').innerHTML=html;
+}
+function verHist(idx){
+  const h=S.hist[idx];
+  const d=new Date(h.dt);
+  document.getElementById('mHistTitle').textContent=`🛒 Compra #${S.hist.length-idx}`;
+  const ORDER=['Alimentação','Limpeza','Higiene','Outros'];
+  const cats=[...new Set(h.itens.map(i=>i.cat))].sort((a,b)=>(ORDER.indexOf(a)<0?99:ORDER.indexOf(a))-(ORDER.indexOf(b)<0?99:ORDER.indexOf(b)));
+  let html=`<div style="font-size:.8rem;color:var(--text2);margin-bottom:12px">${d.toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'})}</div>`;
+  cats.forEach(cat=>{
+    const itens=h.itens.filter(i=>i.cat===cat);
+    html+=`<div class="sec-lbl">${catIco(cat)}</div>`;
+    itens.forEach(i=>{html+=`<div class="det-row"><span>${i.nome} ×${i.qty}</span><strong>${R$(i.price*i.qty)}</strong></div>`});
+  });
+  html+=`<hr><div class="det-row" style="font-weight:800"><span>TOTAL</span><strong>${R$(h.total)}</strong></div>`;
+  document.getElementById('mHistHTML').innerHTML=html;
+  abrirModal('mHist');
+}
+
+// ════════════════════════════════════════
+// EXPORT / IMPORT
+// ════════════════════════════════════════
+function exportar(){
+  const data=JSON.stringify({prods:S.prods,lista:S.lista,hist:S.hist,dark:S.dark,exportedAt:new Date().toISOString()},null,2);
+  const a=document.createElement('a');
+  a.href='data:application/json,'+encodeURIComponent(data);
+  a.download='lista-compras-backup-'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();toast('Backup exportado!');
+}
+function importar(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    try{
+      const d=JSON.parse(ev.target.result);
+      if(!confirm('Substituir todos os dados pelo backup?'))return;
+      S.prods=d.prods||S.prods;S.lista=d.lista||S.lista;S.hist=d.hist||S.hist;S.dark=d.dark||false;
+      salvar();aplicarTema();renderLista();toast('Backup importado!');
+    }catch{toast('Erro ao importar arquivo!')}
+  };
+  r.readAsText(f);e.target.value='';
+}
+function resetTudo(){
+  if(!confirm('⚠️ Apagar TUDO e restaurar dados originais da planilha?'))return;
+  localStorage.removeItem('mkt_v3');
+  S={prods:JSON.parse(JSON.stringify(PROD_INI)),lista:JSON.parse(JSON.stringify(LISTA_INI)),hist:[],dark:false};
+  salvar();aplicarTema();goTab('lista');toast('Dados restaurados!');
+}
+
+// ════════════════════════════════════════
+// MODAIS
+// ════════════════════════════════════════
+function abrirModal(id){document.getElementById(id).classList.add('on')}
+function fecharModal(id){document.getElementById(id).classList.remove('on')}
+document.querySelectorAll('.overlay').forEach(o=>{
+  o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('on')});
+});
+
+// ════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════
+carregar();
+const hoje=new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'});
+document.getElementById('hdrDate').textContent=hoje;
+document.getElementById('progDate').textContent=hoje;
+renderLista();
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(r => console.log('SW registrado:', r.scope))
+      .catch(e => console.warn('SW falhou:', e));
+  });
+}
+</script>
+</body>
+</html>
