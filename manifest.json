@@ -1,0 +1,28 @@
+{
+  "background_color": "#0f172a",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "Lista de Compras",
+  "orientation": "any",
+  "scope": "/",
+  "short_name": "Mercado",
+  "start_url": "https://jeffstresming-beep.github.io/lista-compras/ta-compras/",
+  "theme_color": "#38a169",
+  "icons": [
+    {
+      "src": "https://jeffstresming-beep.github.io/lista-compras/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "isSquare": true,
+      "isPng": true,
+      "isWebp": false,
+      "isJpg": false,
+      "width": 192,
+      "is512x512": false,
+      "is256x256": false,
+      "is192x192": true
+    }
+  ],
+  "description": "Lista de compras com catálogo e histórico",
+  "lang": "pt"
+}
