@@ -291,7 +291,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
       <div class="prog-stats">
         <div class="stat"><div class="stat-v" id="sPend">0</div><div class="stat-l">Pendentes</div></div>
         <div class="stat"><div class="stat-v" id="sDone">0</div><div class="stat-l">Comprados</div></div>
-        <div class="stat"><div class="stat-v" id="sTotal">R$0</div><div class="stat-l">Total Est.</div></div>
+        <div class="stat"><div class="stat-v" id="sTotal">R$0</div><div class="stat-l">Total Gasto</div></div>
       </div>
     </div>
     <div id="listaHTML"></div>
@@ -588,7 +588,7 @@ function renderLista(){
   const feitos=S.lista.filter(i=>i.comprado).length;
   const pend=total-feitos;
   const pct=total?Math.round(feitos/total*100):0;
-  const totalVal=S.lista.filter(i=>!i.comprado).reduce((s,i)=>s+i.price*i.qty,0);
+  const totalVal=S.lista.filter(i=>i.comprado).reduce((s,i)=>s+i.price*i.qty,0);
 
   document.getElementById('progCount').textContent=feitos+'/'+total;
   document.getElementById('progPct').textContent=pct+'%';
